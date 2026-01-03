@@ -16,11 +16,18 @@
 				"userProperties": [],
 				"typeProperties": {
 					"source": {
-						"type": "AzureTableSource",
-						"azureTableSourceIgnoreTableNotFound": false
+						"type": "JsonSource",
+						"storeSettings": {
+							"type": "AzureBlobFSReadSettings",
+							"recursive": true,
+							"enablePartitionDiscovery": false
+						},
+						"formatSettings": {
+							"type": "JsonReadSettings"
+						}
 					},
 					"dataset": {
-						"referenceName": "AzureTableDataset",
+						"referenceName": "MetadataJSON",
 						"type": "DatasetReference"
 					},
 					"firstRowOnly": false
@@ -32,6 +39,12 @@
 				"dependsOn": [
 					{
 						"activity": "Metadata Look up",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					},
+					{
+						"activity": "Current Timestamp",
 						"dependencyConditions": [
 							"Succeeded"
 						]
@@ -54,13 +67,109 @@
 								"expression": {
 									"value": "@item().isFullLoad",
 									"type": "Expression"
-								}
+								},
+								"ifTrueActivities": [
+									{
+										"name": "Copy Incremental Data",
+										"type": "Copy",
+										"state": "Inactive",
+										"onInactiveMarkAs": "Succeeded",
+										"dependsOn": [],
+										"policy": {
+											"timeout": "0.12:00:00",
+											"retry": 0,
+											"retryIntervalInSeconds": 30,
+											"secureOutput": false,
+											"secureInput": false
+										},
+										"userProperties": [],
+										"typeProperties": {
+											"source": {
+												"type": "AzureSqlSource",
+												"sqlReaderQuery": {
+													"value": "SELECT * FROM \n@{item().schema}.@{item().table}\n\nWHERE\n\n@{item().timestampColumn} > @{item().watermarkTimestamp}",
+													"type": "Expression"
+												},
+												"queryTimeout": "02:00:00",
+												"partitionOption": "None"
+											},
+											"sink": {
+												"type": "JsonSink",
+												"storeSettings": {
+													"type": "AzureBlobFSWriteSettings"
+												},
+												"formatSettings": {
+													"type": "JsonWriteSettings"
+												}
+											},
+											"enableStaging": false
+										},
+										"inputs": [
+											{
+												"referenceName": "AzureSqlTableDataset",
+												"type": "DatasetReference",
+												"parameters": {
+													"tableName": {
+														"value": "@item().table",
+														"type": "Expression"
+													},
+													"schemaName": {
+														"value": "@item().schema",
+														"type": "Expression"
+													}
+												}
+											}
+										],
+										"outputs": [
+											{
+												"referenceName": "AzureDataLakeDataset",
+												"type": "DatasetReference",
+												"parameters": {
+													"container": "bronze",
+													"folder": {
+														"value": "@item().table",
+														"type": "Expression"
+													},
+													"fileName": {
+														"value": "@concat(item().table,'_',variables('current_timestamp'))",
+														"type": "Expression"
+													}
+												}
+											}
+										]
+									}
+								]
 							}
 						}
 					]
 				}
+			},
+			{
+				"name": "Current Timestamp",
+				"type": "SetVariable",
+				"dependsOn": [],
+				"policy": {
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"variableName": "current_timestamp",
+					"value": {
+						"value": "@utcNow()",
+						"type": "Expression"
+					}
+				}
 			}
 		],
+		"variables": {
+			"current_timestamp": {
+				"type": "String"
+			},
+			"MaxUpdatedDate": {
+				"type": "String"
+			}
+		},
 		"annotations": []
 	}
 }
