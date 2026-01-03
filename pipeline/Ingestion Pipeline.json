@@ -25,6 +25,40 @@
 					},
 					"firstRowOnly": false
 				}
+			},
+			{
+				"name": "For each table in metadata",
+				"type": "ForEach",
+				"dependsOn": [
+					{
+						"activity": "Metadata Look up",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"items": {
+						"value": "@activity('Metadata Look up').output.value",
+						"type": "Expression"
+					},
+					"isSequential": true,
+					"activities": [
+						{
+							"name": "If Full Load",
+							"type": "IfCondition",
+							"dependsOn": [],
+							"userProperties": [],
+							"typeProperties": {
+								"expression": {
+									"value": "@item().isFullLoad",
+									"type": "Expression"
+								}
+							}
+						}
+					]
+				}
 			}
 		],
 		"annotations": []
