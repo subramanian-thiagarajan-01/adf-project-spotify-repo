@@ -1,0 +1,14 @@
+{
+	"name": "AzureDataLakeStorageLinkedService",
+	"properties": {
+		"annotations": [],
+		"type": "AzureBlobFS",
+		"typeProperties": {
+			"url": "https://storageprojectspotifydev.dfs.core.windows.net/",
+			"credential": {
+				"referenceName": "uam-storage-account",
+				"type": "CredentialReference"
+			}
+		}
+	}
+}
