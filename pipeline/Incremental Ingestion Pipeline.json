@@ -36,7 +36,7 @@
 								"source": {
 									"type": "AzureSqlSource",
 									"sqlReaderQuery": {
-										"value": "SELECT * FROM\n\n@{pipeline().parameters.inputItem.schema}.@{pipeline().parameters.inputItem.table}\n\nWHERE\n\n@{pipeline().parameters.inputItem.timestampColumn} >= @{pipeline().parameters.watermarkTimestamp}",
+										"value": "SELECT * FROM\n\n@{pipeline().parameters.inputItem.schema}.@{pipeline().parameters.inputItem.table}\n\nWHERE\n\n@{pipeline().parameters.inputItem.timestampColumn} >= '@{pipeline().parameters.watermarkTimestamp}'",
 										"type": "Expression"
 									},
 									"queryTimeout": "02:00:00",
