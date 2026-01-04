@@ -19,11 +19,11 @@
 			"type": "string",
 			"defaultValue": "sqldb-project-spotify-dev"
 		},
-		"Tumbling Window Trigger for Backfilling_properties_pipeline_parameters_start_date": {
+		"Tumbling Window Trigger - Backfilling_properties_pipeline_parameters_start_date": {
 			"type": "string",
 			"defaultValue": "@trigger().windowStartTime"
 		},
-		"Tumbling Window Trigger for Backfilling_properties_pipeline_parameters_end_date": {
+		"Tumbling Window Trigger - Backfilling_properties_pipeline_parameters_end_date": {
 			"type": "string",
 			"defaultValue": "@trigger().windowEndTime"
 		},
@@ -63,11 +63,11 @@
 					"AzureDataLakeStorageLinkedService_properties_typeProperties_url": {
 						"value": "[parameters('AzureDataLakeStorageLinkedService_properties_typeProperties_url')]"
 					},
-					"Tumbling Window Trigger for Backfilling_properties_pipeline_parameters_start_date": {
-						"value": "[parameters('Tumbling Window Trigger for Backfilling_properties_pipeline_parameters_start_date')]"
+					"Tumbling Window Trigger - Backfilling_properties_pipeline_parameters_start_date": {
+						"value": "[parameters('Tumbling Window Trigger - Backfilling_properties_pipeline_parameters_start_date')]"
 					},
-					"Tumbling Window Trigger for Backfilling_properties_pipeline_parameters_end_date": {
-						"value": "[parameters('Tumbling Window Trigger for Backfilling_properties_pipeline_parameters_end_date')]"
+					"Tumbling Window Trigger - Backfilling_properties_pipeline_parameters_end_date": {
+						"value": "[parameters('Tumbling Window Trigger - Backfilling_properties_pipeline_parameters_end_date')]"
 					}
 				}
 			},

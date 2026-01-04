@@ -19,11 +19,11 @@
 			"type": "string",
 			"defaultValue": "https://storageprojectspotifydev.dfs.core.windows.net/"
 		},
-		"Tumbling Window Trigger for Backfilling_properties_pipeline_parameters_start_date": {
+		"Tumbling Window Trigger - Backfilling_properties_pipeline_parameters_start_date": {
 			"type": "string",
 			"defaultValue": "@trigger().windowStartTime"
 		},
-		"Tumbling Window Trigger for Backfilling_properties_pipeline_parameters_end_date": {
+		"Tumbling Window Trigger - Backfilling_properties_pipeline_parameters_end_date": {
 			"type": "string",
 			"defaultValue": "@trigger().windowEndTime"
 		}
@@ -938,7 +938,7 @@
 			]
 		},
 		{
-			"name": "[concat(parameters('factoryName'), '/Tumbling Window Trigger for Backfilling')]",
+			"name": "[concat(parameters('factoryName'), '/Tumbling Window Trigger - Backfilling')]",
 			"type": "Microsoft.DataFactory/factories/triggers",
 			"apiVersion": "2018-06-01",
 			"properties": {
@@ -950,8 +950,8 @@
 						"type": "PipelineReference"
 					},
 					"parameters": {
-						"start_date": "[parameters('Tumbling Window Trigger for Backfilling_properties_pipeline_parameters_start_date')]",
-						"end_date": "[parameters('Tumbling Window Trigger for Backfilling_properties_pipeline_parameters_end_date')]"
+						"start_date": "[parameters('Tumbling Window Trigger - Backfilling_properties_pipeline_parameters_start_date')]",
+						"end_date": "[parameters('Tumbling Window Trigger - Backfilling_properties_pipeline_parameters_end_date')]"
 					}
 				},
 				"type": "TumblingWindowTrigger",
