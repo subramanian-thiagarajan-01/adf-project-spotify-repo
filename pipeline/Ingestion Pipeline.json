@@ -269,7 +269,7 @@
 													{
 														"name": "watermarkTimestamp",
 														"value": {
-															"value": "@activity('Get Max Timestamp from Source DB').output.MaxTimestamp",
+															"value": "@activity('Get Max Timestamp from Source DB').output.firstRow",
 															"type": "Expression"
 														}
 													}
