@@ -21,7 +21,7 @@ This project demonstrates a **production-grade metadata-driven data ingestion so
 
 ## System Architecture
 
-![ADF Architecture](<Mermaid Chart - Create complex, visual diagrams with text.-2026-01-04-112109.png>)
+![ADF Architecture](<images/ADF Architecture.png>)
 
 ---
 
@@ -68,7 +68,7 @@ The `adf-pipeline-metadata.json` file is the **single source of truth** for all 
 - **Start Date:** 2026-01-05
 - **Time Zone:** India Standard Time
 
-![Ingestion Pipeline](<Mermaid Chart - Create complex, visual diagrams with text.-2026-01-04-112947.png>)
+![Ingestion Pipeline](<images/Ingestion Pipeline.png>)
 
 **Key Logic:**
 
@@ -81,7 +81,7 @@ The `adf-pipeline-metadata.json` file is the **single source of truth** for all 
 
 ### 2. **Incremental Ingestion Pipeline** (Change Data Capture)
 
-![Incremental Ingestion Pipeline](<Mermaid Chart - Create complex, visual diagrams with text.-2026-01-04-113144.png>)
+![Incremental Ingestion Pipeline](<images/Incremental Ingestion.png>)
 
 **Incremental Load Workflow:**
 
@@ -97,7 +97,7 @@ The `adf-pipeline-metadata.json` file is the **single source of truth** for all 
 
 **Purpose:** Bulk-load historical data for a specified date range without affecting incremental operations.
 
-![Backfilling](<Mermaid Chart - Create complex, visual diagrams with text.-2026-01-04-113301.png>)
+![Backfilling](images/Backfilling.png)
 
 **Use Cases:**
 
@@ -109,7 +109,7 @@ The `adf-pipeline-metadata.json` file is the **single source of truth** for all 
 
 ## Data Flow: End-to-End Sequence
 
-## ![End-End Sequence](<Mermaid Chart - Create complex, visual diagrams with text.-2026-01-04-113354.png>)
+## ![End-End Sequence](images/EndtoEndADF.png)
 
 ## Linked Services & Authentication
 
@@ -197,7 +197,7 @@ Storage Account: storageprojectspotifydev (ADLS Gen2)
 
 ### Pipeline Failure Handling
 
-![Pipeline Failure handling](<Mermaid Chart - Create complex, visual diagrams with text.-2026-01-04-113521.png>)
+![Pipeline Failure handling](<images/Pipeline Failure Handling.png>)
 
 ### Retry & Timeout Policy
 
