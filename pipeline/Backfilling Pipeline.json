@@ -84,7 +84,7 @@
 											"source": {
 												"type": "AzureSqlSource",
 												"sqlReaderQuery": {
-													"value": "SELECT * FROM\n\n@{item().schema}.@{item().table}\n\nWHERE\n\n@{item().timestampColumn} > '@{pipeline().parameters.start_date}'\nAND \n'@{item().timestampColumn} <= '@{pipeline().parameters.end_date}'",
+													"value": "SELECT * FROM\n\n@{item().schema}.@{item().table}\n\nWHERE\n\n@{item().timestampColumn} > '@{pipeline().parameters.start_date}'\nAND \n@{item().timestampColumn} <= '@{pipeline().parameters.end_date}'",
 													"type": "Expression"
 												},
 												"queryTimeout": "02:00:00",
