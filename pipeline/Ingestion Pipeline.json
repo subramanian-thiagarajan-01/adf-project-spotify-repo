@@ -31,7 +31,7 @@
 						"type": "DatasetReference",
 						"parameters": {
 							"container": "adf-pipeline-metadata",
-							"fileName": "adf-pipeline-metadat.json"
+							"fileName": "adf-pipeline-metadata.json"
 						}
 					},
 					"firstRowOnly": false
