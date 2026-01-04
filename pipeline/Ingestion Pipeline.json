@@ -263,7 +263,7 @@
 						"type": "Expression"
 					},
 					"errorCode": {
-						"value": "'400'",
+						"value": "LOOKUP_NOT_FOUND",
 						"type": "Expression"
 					}
 				}
