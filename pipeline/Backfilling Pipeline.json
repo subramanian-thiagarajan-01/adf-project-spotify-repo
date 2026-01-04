@@ -224,12 +224,10 @@
 		],
 		"parameters": {
 			"start_date": {
-				"type": "string",
-				"defaultValue": "@{trigger().startTime}"
+				"type": "string"
 			},
 			"end_date": {
-				"type": "string",
-				"defaultValue": "@{trigger().endTime}"
+				"type": "string"
 			}
 		},
 		"annotations": []
