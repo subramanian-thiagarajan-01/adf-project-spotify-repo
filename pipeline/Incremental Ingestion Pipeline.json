@@ -1,0 +1,245 @@
+{
+	"name": "Incremental Ingestion Pipeline",
+	"properties": {
+		"activities": [
+			{
+				"name": "If Incremental Count greater than 0",
+				"type": "IfCondition",
+				"dependsOn": [],
+				"userProperties": [],
+				"typeProperties": {
+					"expression": {
+						"value": "@greater(pipeline().parameters.incrementalCountValue,0)",
+						"type": "Expression"
+					},
+					"ifTrueActivities": [
+						{
+							"name": "Copy Incremental Data",
+							"type": "Copy",
+							"dependsOn": [
+								{
+									"activity": "Set Current Timestamp",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								}
+							],
+							"policy": {
+								"timeout": "0.12:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"source": {
+									"type": "AzureSqlSource",
+									"sqlReaderQuery": {
+										"value": "SELECT * FROM\n\n@{pipeline().parameters.inputItem.schema}.@{pipeline().parameters.inputItem.table}\n\nWHERE\n\n@{pipeline().parameters.inputItem.timestampColumn} >= '@{pipeline().parameters.watermarkTimestamp}'",
+										"type": "Expression"
+									},
+									"queryTimeout": "02:00:00",
+									"partitionOption": "None"
+								},
+								"sink": {
+									"type": "JsonSink",
+									"storeSettings": {
+										"type": "AzureBlobFSWriteSettings"
+									},
+									"formatSettings": {
+										"type": "JsonWriteSettings"
+									}
+								},
+								"enableStaging": false
+							},
+							"inputs": [
+								{
+									"referenceName": "AzureSqlTableDataset",
+									"type": "DatasetReference",
+									"parameters": {
+										"tableName": {
+											"value": "@pipeline().parameters.inputItem.table",
+											"type": "Expression"
+										},
+										"schemaName": {
+											"value": "@pipeline().parameters.inputItem.schema",
+											"type": "Expression"
+										}
+									}
+								}
+							],
+							"outputs": [
+								{
+									"referenceName": "AzureDataLakeDataset",
+									"type": "DatasetReference",
+									"parameters": {
+										"container": "bronze",
+										"fileName": {
+											"value": "@concat(\n    pipeline().parameters.inputItem.table, \n    '/',\n    pipeline().parameters.inputItem.table,\n    '_',\n    variables('current_timestamp'))\n\n",
+											"type": "Expression"
+										}
+									}
+								}
+							]
+						},
+						{
+							"name": "Get Max Timestamp from Source DB",
+							"type": "Lookup",
+							"dependsOn": [
+								{
+									"activity": "Copy Incremental Data",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								}
+							],
+							"policy": {
+								"timeout": "0.12:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"source": {
+									"type": "AzureSqlSource",
+									"sqlReaderQuery": {
+										"value": "SELECT MAX(@{pipeline().parameters.inputItem.timestampColumn}) AS MaxTimestamp\n\nFROM\n\n@{pipeline().parameters.inputItem.schema}.@{pipeline().parameters.inputItem.table}",
+										"type": "Expression"
+									},
+									"queryTimeout": "02:00:00",
+									"partitionOption": "None"
+								},
+								"dataset": {
+									"referenceName": "AzureSqlTableDataset",
+									"type": "DatasetReference",
+									"parameters": {
+										"tableName": {
+											"value": "@pipeline().parameters.inputItem.table",
+											"type": "Expression"
+										},
+										"schemaName": {
+											"value": "@pipeline().parameters.inputItem.schema",
+											"type": "Expression"
+										}
+									}
+								}
+							}
+						},
+						{
+							"name": "Fill Watermark",
+							"type": "Copy",
+							"dependsOn": [
+								{
+									"activity": "Get Max Timestamp from Source DB",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								}
+							],
+							"policy": {
+								"timeout": "0.12:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"source": {
+									"type": "JsonSource",
+									"additionalColumns": [
+										{
+											"name": "watermarkTimestamp",
+											"value": {
+												"value": "@activity('Get Max Timestamp from Source DB').output.firstRow.MaxTimestamp",
+												"type": "Expression"
+											}
+										}
+									],
+									"storeSettings": {
+										"type": "AzureBlobFSReadSettings",
+										"recursive": true,
+										"enablePartitionDiscovery": false
+									},
+									"formatSettings": {
+										"type": "JsonReadSettings"
+									}
+								},
+								"sink": {
+									"type": "JsonSink",
+									"storeSettings": {
+										"type": "AzureBlobFSWriteSettings"
+									},
+									"formatSettings": {
+										"type": "JsonWriteSettings"
+									}
+								},
+								"enableStaging": false
+							},
+							"inputs": [
+								{
+									"referenceName": "AzureDataLakeDataset",
+									"type": "DatasetReference",
+									"parameters": {
+										"container": "adf-pipeline-metadata",
+										"fileName": "empty.json"
+									}
+								}
+							],
+							"outputs": [
+								{
+									"referenceName": "AzureDataLakeDataset",
+									"type": "DatasetReference",
+									"parameters": {
+										"container": "adf-pipeline-metadata",
+										"fileName": {
+											"value": "@concat(   \n    'watermarks/', \n    pipeline().parameters.inputItem.schema, \n    '.', \n    pipeline().parameters.inputItem.table, \n    '.json') ",
+											"type": "Expression"
+										}
+									}
+								}
+							]
+						},
+						{
+							"name": "Set Current Timestamp",
+							"type": "SetVariable",
+							"dependsOn": [],
+							"policy": {
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"variableName": "current_timestamp",
+								"value": {
+									"value": "@utcNow()",
+									"type": "Expression"
+								}
+							}
+						}
+					]
+				}
+			}
+		],
+		"parameters": {
+			"inputItem": {
+				"type": "object"
+			},
+			"incrementalCountValue": {
+				"type": "int"
+			},
+			"watermarkTimestamp": {
+				"type": "string"
+			}
+		},
+		"variables": {
+			"current_timestamp": {
+				"type": "String"
+			}
+		},
+		"annotations": []
+	}
+}

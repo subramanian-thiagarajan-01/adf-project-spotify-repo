@@ -1,0 +1,14 @@
+{
+	"name": "AzureSqlDatabaseLinkedService",
+	"properties": {
+		"annotations": [],
+		"type": "AzureSqlDatabase",
+		"typeProperties": {
+			"server": "sqlserver-project-spotify-dev.database.windows.net",
+			"database": "sqldb-project-spotify-dev",
+			"encrypt": "mandatory",
+			"trustServerCertificate": false,
+			"authenticationType": "SystemAssignedManagedIdentity"
+		}
+	}
+}
