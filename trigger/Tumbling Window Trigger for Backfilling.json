@@ -2,7 +2,7 @@
 	"name": "Tumbling Window Trigger for Backfilling",
 	"properties": {
 		"annotations": [],
-		"runtimeState": "Started",
+		"runtimeState": "Stopped",
 		"pipeline": {
 			"pipelineReference": {
 				"referenceName": "Backfilling Pipeline",
