@@ -90,6 +90,115 @@
 									"value": "@item().isFullLoad",
 									"type": "Expression"
 								},
+								"ifFalseActivities": [
+									{
+										"name": "Copy Incremental Data",
+										"type": "Copy",
+										"dependsOn": [
+											{
+												"activity": "Lookup Watermark",
+												"dependencyConditions": [
+													"Succeeded"
+												]
+											}
+										],
+										"policy": {
+											"timeout": "0.12:00:00",
+											"retry": 0,
+											"retryIntervalInSeconds": 30,
+											"secureOutput": false,
+											"secureInput": false
+										},
+										"userProperties": [],
+										"typeProperties": {
+											"source": {
+												"type": "AzureSqlSource",
+												"sqlReaderQuery": {
+													"value": "SELECT * FROM\n\n@{item().schema}.@{item().table}\n\nWHERE\n\n@{item().timestampColumn} >= @{activity('Lookup Watermark').output.firstRow}",
+													"type": "Expression"
+												},
+												"queryTimeout": "02:00:00",
+												"partitionOption": "None"
+											},
+											"sink": {
+												"type": "JsonSink",
+												"storeSettings": {
+													"type": "AzureBlobFSWriteSettings"
+												},
+												"formatSettings": {
+													"type": "JsonWriteSettings"
+												}
+											},
+											"enableStaging": false
+										},
+										"inputs": [
+											{
+												"referenceName": "AzureSqlTableDataset",
+												"type": "DatasetReference",
+												"parameters": {
+													"tableName": {
+														"value": "@item().table",
+														"type": "Expression"
+													},
+													"schemaName": {
+														"value": "@item().schema",
+														"type": "Expression"
+													}
+												}
+											}
+										],
+										"outputs": [
+											{
+												"referenceName": "AzureDataLakeDataset",
+												"type": "DatasetReference",
+												"parameters": {
+													"container": "bronze",
+													"fileName": {
+														"value": "@concat(item().table, '/',item().fileName,'_',variables('current_timestamp'))",
+														"type": "Expression"
+													}
+												}
+											}
+										]
+									},
+									{
+										"name": "Lookup Watermark",
+										"type": "Lookup",
+										"dependsOn": [],
+										"policy": {
+											"timeout": "0.12:00:00",
+											"retry": 0,
+											"retryIntervalInSeconds": 30,
+											"secureOutput": false,
+											"secureInput": false
+										},
+										"userProperties": [],
+										"typeProperties": {
+											"source": {
+												"type": "JsonSource",
+												"storeSettings": {
+													"type": "AzureBlobFSReadSettings",
+													"recursive": true,
+													"enablePartitionDiscovery": false
+												},
+												"formatSettings": {
+													"type": "JsonReadSettings"
+												}
+											},
+											"dataset": {
+												"referenceName": "AzureDataLakeDataset",
+												"type": "DatasetReference",
+												"parameters": {
+													"container": "adf-pipeline-metadata",
+													"fileName": {
+														"value": "@concat('watermarks/', item().schema, '.', item().table, '.json') ",
+														"type": "Expression"
+													}
+												}
+											}
+										}
+									}
+								],
 								"ifTrueActivities": [
 									{
 										"name": "Copy Full Load Data",
