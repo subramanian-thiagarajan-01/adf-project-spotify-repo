@@ -133,7 +133,7 @@
 												{
 													"type": "Query",
 													"text": {
-														"value": "SELECT COUNT(*) AS countValue\nFROM @{item().schema}.@{item().table}\nWHERE @{item().timestampColumn} >= '@{activity('Lookup Watermark').output.firstRow.watermarkTimestamp}'\n",
+														"value": "SELECT COUNT(*) AS countValue\nFROM @{item().schema}.@{item().table}\nWHERE @{item().timestampColumn} > '@{activity('Lookup Watermark').output.firstRow.watermarkTimestamp}'\n",
 														"type": "Expression"
 													}
 												}
