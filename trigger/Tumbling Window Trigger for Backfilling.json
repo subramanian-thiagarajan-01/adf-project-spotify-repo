@@ -1,5 +1,5 @@
 {
-	"name": "Tumbling Window Trigger",
+	"name": "Tumbling Window Trigger for Backfilling",
 	"properties": {
 		"annotations": [],
 		"runtimeState": "Stopped",
