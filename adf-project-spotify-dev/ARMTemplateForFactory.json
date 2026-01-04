@@ -964,18 +964,6 @@
 			]
 		},
 		{
-			"name": "[concat(parameters('factoryName'), '/uam-storage-account')]",
-			"type": "Microsoft.DataFactory/factories/credentials",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"type": "ManagedIdentity",
-				"typeProperties": {
-					"resourceId": "/subscriptions/2891def1-4900-420a-b281-68e5d5ab47e4/resourcegroups/rg-project-spotify-dev/providers/Microsoft.ManagedIdentity/userAssignedIdentities/uam-project-spotify-dev"
-				}
-			},
-			"dependsOn": []
-		},
-		{
 			"name": "[concat(parameters('factoryName'), '/Tumbling Window Trigger for Backfilling')]",
 			"type": "Microsoft.DataFactory/factories/triggers",
 			"apiVersion": "2018-06-01",
@@ -1010,6 +998,18 @@
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/pipelines/Backfilling Pipeline')]"
 			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/uam-storage-account')]",
+			"type": "Microsoft.DataFactory/factories/credentials",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"type": "ManagedIdentity",
+				"typeProperties": {
+					"resourceId": "/subscriptions/2891def1-4900-420a-b281-68e5d5ab47e4/resourcegroups/rg-project-spotify-dev/providers/Microsoft.ManagedIdentity/userAssignedIdentities/uam-project-spotify-dev"
+				}
+			},
+			"dependsOn": []
 		}
 	]
 }
