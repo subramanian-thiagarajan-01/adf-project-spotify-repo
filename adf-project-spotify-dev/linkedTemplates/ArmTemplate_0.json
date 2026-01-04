@@ -18,6 +18,14 @@
 		"AzureDataLakeStorageLinkedService_properties_typeProperties_url": {
 			"type": "string",
 			"defaultValue": "https://storageprojectspotifydev.dfs.core.windows.net/"
+		},
+		"Tumbling Window Trigger for Backfilling_properties_pipeline_parameters_start_date": {
+			"type": "string",
+			"defaultValue": "@{trigger().startTime}"
+		},
+		"Tumbling Window Trigger for Backfilling_properties_pipeline_parameters_end_date": {
+			"type": "string",
+			"defaultValue": "@{trigger().endTime}"
 		}
 	},
 	"variables": {
@@ -144,6 +152,252 @@
 			},
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/linkedServices/AzureDataLakeStorageLinkedService')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/Backfilling Pipeline')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "Lookup Tables Metadata",
+						"type": "Lookup",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "JsonSource",
+								"storeSettings": {
+									"type": "AzureBlobFSReadSettings",
+									"recursive": false,
+									"enablePartitionDiscovery": false
+								},
+								"formatSettings": {
+									"type": "JsonReadSettings"
+								}
+							},
+							"dataset": {
+								"referenceName": "AzureDataLakeDataset",
+								"type": "DatasetReference",
+								"parameters": {
+									"container": "adf-pipeline-metadata",
+									"fileName": "adf-pipeline-metadata.json"
+								}
+							},
+							"firstRowOnly": false
+						}
+					},
+					{
+						"name": "For Each Table",
+						"type": "ForEach",
+						"dependsOn": [
+							{
+								"activity": "Lookup Tables Metadata",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"items": {
+								"value": "@activity('Lookup Tables Metadata').output.value",
+								"type": "Expression"
+							},
+							"isSequential": false,
+							"batchCount": 3,
+							"activities": [
+								{
+									"name": "If isFullLoad",
+									"type": "IfCondition",
+									"dependsOn": [],
+									"userProperties": [],
+									"typeProperties": {
+										"expression": {
+											"value": "@item().isFullLoad",
+											"type": "Expression"
+										},
+										"ifFalseActivities": [
+											{
+												"name": "Copy backfilling data",
+												"type": "Copy",
+												"dependsOn": [],
+												"policy": {
+													"timeout": "0.12:00:00",
+													"retry": 0,
+													"retryIntervalInSeconds": 30,
+													"secureOutput": false,
+													"secureInput": false
+												},
+												"userProperties": [],
+												"typeProperties": {
+													"source": {
+														"type": "AzureSqlSource",
+														"sqlReaderQuery": {
+															"value": "SELECT * FROM\n\n@{item().schema}.@{item().table}\n\nWHERE\n\n@{item().timestampColumn} > '@{pipeline().parameters.start_date}'\nAND \n@{item().timestampColumn} <= '@{pipeline().parameters.end_date}'",
+															"type": "Expression"
+														},
+														"queryTimeout": "02:00:00",
+														"partitionOption": "None"
+													},
+													"sink": {
+														"type": "JsonSink",
+														"storeSettings": {
+															"type": "AzureBlobFSWriteSettings"
+														},
+														"formatSettings": {
+															"type": "JsonWriteSettings"
+														}
+													},
+													"enableStaging": false
+												},
+												"inputs": [
+													{
+														"referenceName": "AzureSqlTableDataset",
+														"type": "DatasetReference",
+														"parameters": {
+															"tableName": {
+																"value": "@item().table",
+																"type": "Expression"
+															},
+															"schemaName": {
+																"value": "@item().schema",
+																"type": "Expression"
+															}
+														}
+													}
+												],
+												"outputs": [
+													{
+														"referenceName": "AzureDataLakeDataset",
+														"type": "DatasetReference",
+														"parameters": {
+															"container": "bronze",
+															"fileName": {
+																"value": "@concat(\n    item().table, \n    '/',\n    item().table,\n    '_',\n    'backfilled',\n    utcNow())\n\n",
+																"type": "Expression"
+															}
+														}
+													}
+												]
+											}
+										],
+										"ifTrueActivities": [
+											{
+												"name": "Copy Full Load Data",
+												"type": "Copy",
+												"dependsOn": [],
+												"policy": {
+													"timeout": "0.12:00:00",
+													"retry": 0,
+													"retryIntervalInSeconds": 30,
+													"secureOutput": false,
+													"secureInput": false
+												},
+												"userProperties": [],
+												"typeProperties": {
+													"source": {
+														"type": "AzureSqlSource",
+														"queryTimeout": "02:00:00",
+														"partitionOption": "None"
+													},
+													"sink": {
+														"type": "JsonSink",
+														"storeSettings": {
+															"type": "AzureBlobFSWriteSettings"
+														},
+														"formatSettings": {
+															"type": "JsonWriteSettings"
+														}
+													},
+													"enableStaging": false
+												},
+												"inputs": [
+													{
+														"referenceName": "AzureSqlTableDataset",
+														"type": "DatasetReference",
+														"parameters": {
+															"tableName": {
+																"value": "@item().table",
+																"type": "Expression"
+															},
+															"schemaName": {
+																"value": "@item().schema",
+																"type": "Expression"
+															}
+														}
+													}
+												],
+												"outputs": [
+													{
+														"referenceName": "AzureDataLakeDataset",
+														"type": "DatasetReference",
+														"parameters": {
+															"container": "bronze",
+															"fileName": {
+																"value": "@concat(item().table, '/',item().table)",
+																"type": "Expression"
+															}
+														}
+													}
+												]
+											}
+										]
+									}
+								}
+							]
+						}
+					},
+					{
+						"name": "Fail If No Look Up Value",
+						"type": "Fail",
+						"dependsOn": [
+							{
+								"activity": "Lookup Tables Metadata",
+								"dependencyConditions": [
+									"Failed"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"message": {
+								"value": "@concat('Cannot connect to the Look Up Table', activity('Lookup Tables Metadata').error.message)",
+								"type": "Expression"
+							},
+							"errorCode": {
+								"value": "LOOKUP_NOT_FOUND",
+								"type": "Expression"
+							}
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"parameters": {
+					"start_date": {
+						"type": "string",
+						"defaultValue": "@{trigger().startTime}"
+					},
+					"end_date": {
+						"type": "string",
+						"defaultValue": "@{trigger().endTime}"
+					}
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/AzureDataLakeDataset')]",
+				"[concat(variables('factoryId'), '/datasets/AzureSqlTableDataset')]"
 			]
 		},
 		{
@@ -683,6 +937,42 @@
 				"[concat(variables('factoryId'), '/pipelines/Incremental Ingestion Pipeline')]",
 				"[concat(variables('factoryId'), '/linkedServices/AzureSqlDatabaseLinkedService')]",
 				"[concat(variables('factoryId'), '/datasets/AzureSqlTableDataset')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/Tumbling Window Trigger for Backfilling')]",
+			"type": "Microsoft.DataFactory/factories/triggers",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"runtimeState": "Stopped",
+				"pipeline": {
+					"pipelineReference": {
+						"referenceName": "Backfilling Pipeline",
+						"type": "PipelineReference"
+					},
+					"parameters": {
+						"start_date": "[parameters('Tumbling Window Trigger for Backfilling_properties_pipeline_parameters_start_date')]",
+						"end_date": "[parameters('Tumbling Window Trigger for Backfilling_properties_pipeline_parameters_end_date')]"
+					}
+				},
+				"type": "TumblingWindowTrigger",
+				"typeProperties": {
+					"frequency": "Month",
+					"interval": 3,
+					"startTime": "2025-01-01T07:05:00Z",
+					"endTime": "2025-06-30T07:05:00Z",
+					"delay": "00:00:00",
+					"maxConcurrency": 50,
+					"retryPolicy": {
+						"count": 3,
+						"intervalInSeconds": 30
+					},
+					"dependsOn": []
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/pipelines/Backfilling Pipeline')]"
 			]
 		},
 		{

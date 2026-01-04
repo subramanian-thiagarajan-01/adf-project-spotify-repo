@@ -13,6 +13,12 @@
 		},
 		"AzureSqlDatabaseLinkedService_properties_typeProperties_database": {
 			"value": "sqldb-project-spotify-dev"
+		},
+		"Tumbling Window Trigger for Backfilling_properties_pipeline_parameters_start_date": {
+			"value": "@{trigger().startTime}"
+		},
+		"Tumbling Window Trigger for Backfilling_properties_pipeline_parameters_end_date": {
+			"value": "@{trigger().endTime}"
 		}
 	}
 }
