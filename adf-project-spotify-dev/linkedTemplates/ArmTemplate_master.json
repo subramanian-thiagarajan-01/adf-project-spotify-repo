@@ -19,14 +19,6 @@
 			"type": "string",
 			"defaultValue": "sqldb-project-spotify-dev"
 		},
-		"Tumbling Window Trigger - Backfilling_properties_pipeline_parameters_start_date": {
-			"type": "string",
-			"defaultValue": "@trigger().windowStartTime"
-		},
-		"Tumbling Window Trigger - Backfilling_properties_pipeline_parameters_end_date": {
-			"type": "string",
-			"defaultValue": "@trigger().windowEndTime"
-		},
 		"containerUri": {
 			"type": "string",
 			"metadata": "URI to storage account containing linked ARM templates"
@@ -62,12 +54,6 @@
 					},
 					"AzureDataLakeStorageLinkedService_properties_typeProperties_url": {
 						"value": "[parameters('AzureDataLakeStorageLinkedService_properties_typeProperties_url')]"
-					},
-					"Tumbling Window Trigger - Backfilling_properties_pipeline_parameters_start_date": {
-						"value": "[parameters('Tumbling Window Trigger - Backfilling_properties_pipeline_parameters_start_date')]"
-					},
-					"Tumbling Window Trigger - Backfilling_properties_pipeline_parameters_end_date": {
-						"value": "[parameters('Tumbling Window Trigger - Backfilling_properties_pipeline_parameters_end_date')]"
 					}
 				}
 			},

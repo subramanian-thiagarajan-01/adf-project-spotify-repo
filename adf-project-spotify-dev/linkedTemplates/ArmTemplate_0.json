@@ -18,14 +18,6 @@
 		"AzureDataLakeStorageLinkedService_properties_typeProperties_url": {
 			"type": "string",
 			"defaultValue": "https://storageprojectspotifydev.dfs.core.windows.net/"
-		},
-		"Tumbling Window Trigger - Backfilling_properties_pipeline_parameters_start_date": {
-			"type": "string",
-			"defaultValue": "@trigger().windowStartTime"
-		},
-		"Tumbling Window Trigger - Backfilling_properties_pipeline_parameters_end_date": {
-			"type": "string",
-			"defaultValue": "@trigger().windowEndTime"
 		}
 	},
 	"variables": {
@@ -935,42 +927,6 @@
 				"[concat(variables('factoryId'), '/pipelines/Incremental Ingestion Pipeline')]",
 				"[concat(variables('factoryId'), '/linkedServices/AzureSqlDatabaseLinkedService')]",
 				"[concat(variables('factoryId'), '/datasets/AzureSqlTableDataset')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/Tumbling Window Trigger - Backfilling')]",
-			"type": "Microsoft.DataFactory/factories/triggers",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"annotations": [],
-				"runtimeState": "Started",
-				"pipeline": {
-					"pipelineReference": {
-						"referenceName": "Backfilling Pipeline",
-						"type": "PipelineReference"
-					},
-					"parameters": {
-						"start_date": "[parameters('Tumbling Window Trigger - Backfilling_properties_pipeline_parameters_start_date')]",
-						"end_date": "[parameters('Tumbling Window Trigger - Backfilling_properties_pipeline_parameters_end_date')]"
-					}
-				},
-				"type": "TumblingWindowTrigger",
-				"typeProperties": {
-					"frequency": "Month",
-					"interval": 3,
-					"startTime": "2025-01-01T07:05:00Z",
-					"endTime": "2025-06-30T07:05:00Z",
-					"delay": "00:00:00",
-					"maxConcurrency": 50,
-					"retryPolicy": {
-						"count": 3,
-						"intervalInSeconds": 30
-					},
-					"dependsOn": []
-				}
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/pipelines/Backfilling Pipeline')]"
 			]
 		},
 		{
