@@ -21,11 +21,11 @@
 		},
 		"Tumbling Window Trigger for Backfilling_properties_pipeline_parameters_start_date": {
 			"type": "string",
-			"defaultValue": "@{trigger().startTime}"
+			"defaultValue": "@trigger().startTime"
 		},
 		"Tumbling Window Trigger for Backfilling_properties_pipeline_parameters_end_date": {
 			"type": "string",
-			"defaultValue": "@{trigger().endTime}"
+			"defaultValue": "@trigger().endTime"
 		},
 		"containerUri": {
 			"type": "string",
