@@ -31,27 +31,10 @@
 						"type": "DatasetReference",
 						"parameters": {
 							"container": "adf-pipeline-metadata",
-							"fileName": "adf-pipeline-metadata.json"
+							"fileName": "adf-pipeline-metadat.json"
 						}
 					},
 					"firstRowOnly": false
-				}
-			},
-			{
-				"name": "Set Current Timestamp",
-				"type": "SetVariable",
-				"dependsOn": [],
-				"policy": {
-					"secureOutput": false,
-					"secureInput": false
-				},
-				"userProperties": [],
-				"typeProperties": {
-					"variableName": "current_timestamp",
-					"value": {
-						"value": "@utcNow()",
-						"type": "Expression"
-					}
 				}
 			},
 			{
@@ -60,12 +43,6 @@
 				"dependsOn": [
 					{
 						"activity": "Lookup Tables Metadata",
-						"dependencyConditions": [
-							"Succeeded"
-						]
-					},
-					{
-						"activity": "Set Current Timestamp",
 						"dependencyConditions": [
 							"Succeeded"
 						]
@@ -267,13 +244,31 @@
 						}
 					]
 				}
+			},
+			{
+				"name": "Fail If No Look Up Value",
+				"type": "Fail",
+				"dependsOn": [
+					{
+						"activity": "Lookup Tables Metadata",
+						"dependencyConditions": [
+							"Failed"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"message": {
+						"value": "@concat('Cannot connect to the Look Up Table', activity('Lookup Tables Metadata').error.message)",
+						"type": "Expression"
+					},
+					"errorCode": {
+						"value": "'400'",
+						"type": "Expression"
+					}
+				}
 			}
 		],
-		"variables": {
-			"current_timestamp": {
-				"type": "String"
-			}
-		},
 		"annotations": []
 	}
 }
