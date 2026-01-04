@@ -114,7 +114,7 @@
 											"source": {
 												"type": "AzureSqlSource",
 												"sqlReaderQuery": {
-													"value": "SELECT * FROM\n\n@{item().schema}.@{item().table}\n\nWHERE\n\n@{item().timestampColumn} >= @{activity('Lookup Watermark').output.firstRow}",
+													"value": "SELECT * FROM\n\n@{item().schema}.@{item().table}\n\nWHERE\n\n@{item().timestampColumn} >= @{activity('Lookup Watermark').output.firstRow.watermarkTimestamp}",
 													"type": "Expression"
 												},
 												"queryTimeout": "02:00:00",
@@ -197,6 +197,126 @@
 												}
 											}
 										}
+									},
+									{
+										"name": "Get Max Timestamp from Source DB",
+										"type": "Lookup",
+										"dependsOn": [
+											{
+												"activity": "Copy Incremental Data",
+												"dependencyConditions": [
+													"Succeeded"
+												]
+											}
+										],
+										"policy": {
+											"timeout": "0.12:00:00",
+											"retry": 0,
+											"retryIntervalInSeconds": 30,
+											"secureOutput": false,
+											"secureInput": false
+										},
+										"userProperties": [],
+										"typeProperties": {
+											"source": {
+												"type": "AzureSqlSource",
+												"sqlReaderQuery": {
+													"value": "SELECT MAX(@{item().timestampColumn}) AS MaxTimestamp\n\nFROM\n\n@{item().schema}.@{item().table}",
+													"type": "Expression"
+												},
+												"queryTimeout": "02:00:00",
+												"partitionOption": "None"
+											},
+											"dataset": {
+												"referenceName": "AzureSqlTableDataset",
+												"type": "DatasetReference",
+												"parameters": {
+													"tableName": {
+														"value": "@item().table",
+														"type": "Expression"
+													},
+													"schemaName": {
+														"value": "@item().schema",
+														"type": "Expression"
+													}
+												}
+											}
+										}
+									},
+									{
+										"name": "Fill Watermark",
+										"type": "Copy",
+										"dependsOn": [
+											{
+												"activity": "Get Max Timestamp from Source DB",
+												"dependencyConditions": [
+													"Succeeded"
+												]
+											}
+										],
+										"policy": {
+											"timeout": "0.12:00:00",
+											"retry": 0,
+											"retryIntervalInSeconds": 30,
+											"secureOutput": false,
+											"secureInput": false
+										},
+										"userProperties": [],
+										"typeProperties": {
+											"source": {
+												"type": "JsonSource",
+												"additionalColumns": [
+													{
+														"name": "watermarkTimestamp",
+														"value": {
+															"value": "@activity('Get Max Timestamp from Source DB').output.MaxTimestamp",
+															"type": "Expression"
+														}
+													}
+												],
+												"storeSettings": {
+													"type": "AzureBlobFSReadSettings",
+													"recursive": true,
+													"enablePartitionDiscovery": false
+												},
+												"formatSettings": {
+													"type": "JsonReadSettings"
+												}
+											},
+											"sink": {
+												"type": "JsonSink",
+												"storeSettings": {
+													"type": "AzureBlobFSWriteSettings"
+												},
+												"formatSettings": {
+													"type": "JsonWriteSettings"
+												}
+											},
+											"enableStaging": false
+										},
+										"inputs": [
+											{
+												"referenceName": "AzureDataLakeDataset",
+												"type": "DatasetReference",
+												"parameters": {
+													"container": "adf-pipeline-metadata",
+													"fileName": "empty.json"
+												}
+											}
+										],
+										"outputs": [
+											{
+												"referenceName": "AzureDataLakeDataset",
+												"type": "DatasetReference",
+												"parameters": {
+													"container": "adf-pipeline-metadata",
+													"fileName": {
+														"value": "@concat('watermarks/', item().schema, '.', item().table, '.json')",
+														"type": "Expression"
+													}
+												}
+											}
+										]
 									}
 								],
 								"ifTrueActivities": [
