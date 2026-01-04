@@ -92,8 +92,45 @@
 								},
 								"ifFalseActivities": [
 									{
-										"name": "Copy Incremental Data",
-										"type": "Copy",
+										"name": "Incremental Ingestion Pipeline Execution",
+										"type": "ExecutePipeline",
+										"dependsOn": [
+											{
+												"activity": "Get Count of Incremental Records",
+												"dependencyConditions": [
+													"Succeeded"
+												]
+											}
+										],
+										"policy": {
+											"secureInput": false
+										},
+										"userProperties": [],
+										"typeProperties": {
+											"pipeline": {
+												"referenceName": "Incremental Ingestion Pipeline",
+												"type": "PipelineReference"
+											},
+											"waitOnCompletion": true,
+											"parameters": {
+												"inputItem": {
+													"value": "@item()",
+													"type": "Expression"
+												},
+												"incrementalCountValue": {
+													"value": "@activity('Get Count of Incremental Records').output.countValue",
+													"type": "Expression"
+												},
+												"watermarkTimestamp": {
+													"value": "@activity('Lookup Watermark').output.firstRow.watermarkTimestamp",
+													"type": "Expression"
+												}
+											}
+										}
+									},
+									{
+										"name": "Get Count of Incremental Records",
+										"type": "Script",
 										"dependsOn": [
 											{
 												"activity": "Lookup Watermark",
@@ -110,56 +147,22 @@
 											"secureInput": false
 										},
 										"userProperties": [],
-										"typeProperties": {
-											"source": {
-												"type": "AzureSqlSource",
-												"sqlReaderQuery": {
-													"value": "SELECT * FROM\n\n@{item().schema}.@{item().table}\n\nWHERE\n\n@{item().timestampColumn} >= @{activity('Lookup Watermark').output.firstRow.watermarkTimestamp}",
-													"type": "Expression"
-												},
-												"queryTimeout": "02:00:00",
-												"partitionOption": "None"
-											},
-											"sink": {
-												"type": "JsonSink",
-												"storeSettings": {
-													"type": "AzureBlobFSWriteSettings"
-												},
-												"formatSettings": {
-													"type": "JsonWriteSettings"
-												}
-											},
-											"enableStaging": false
+										"linkedServiceName": {
+											"referenceName": "AzureSqlDatabaseLinkedService",
+											"type": "LinkedServiceReference"
 										},
-										"inputs": [
-											{
-												"referenceName": "AzureSqlTableDataset",
-												"type": "DatasetReference",
-												"parameters": {
-													"tableName": {
-														"value": "@item().table",
-														"type": "Expression"
-													},
-													"schemaName": {
-														"value": "@item().schema",
+										"typeProperties": {
+											"scripts": [
+												{
+													"type": "Query",
+													"text": {
+														"value": "SELECT COUNT(*) AS countValue FROM\n\n@{item().schema}.@{item().table}\n\nWHERE\n\n@{item().timestampColumn} >= @{activity('Lookup Watermark').output.firstRow.watermarkTimestamp}",
 														"type": "Expression"
 													}
 												}
-											}
-										],
-										"outputs": [
-											{
-												"referenceName": "AzureDataLakeDataset",
-												"type": "DatasetReference",
-												"parameters": {
-													"container": "bronze",
-													"fileName": {
-														"value": "@concat(item().table, '/',item().table,'_',variables('current_timestamp'))",
-														"type": "Expression"
-													}
-												}
-											}
-										]
+											],
+											"scriptBlockExecutionTimeout": "02:00:00"
+										}
 									},
 									{
 										"name": "Lookup Watermark",
@@ -191,132 +194,12 @@
 												"parameters": {
 													"container": "adf-pipeline-metadata",
 													"fileName": {
-														"value": "@concat('watermarks/', item().schema, '.', item().table, '.json') ",
+														"value": "@concat(   \n    'watermarks/', \n    item().schema, \n    '.', \n    item().table, \n    '.json') \n\n",
 														"type": "Expression"
 													}
 												}
 											}
 										}
-									},
-									{
-										"name": "Get Max Timestamp from Source DB",
-										"type": "Lookup",
-										"dependsOn": [
-											{
-												"activity": "Copy Incremental Data",
-												"dependencyConditions": [
-													"Succeeded"
-												]
-											}
-										],
-										"policy": {
-											"timeout": "0.12:00:00",
-											"retry": 0,
-											"retryIntervalInSeconds": 30,
-											"secureOutput": false,
-											"secureInput": false
-										},
-										"userProperties": [],
-										"typeProperties": {
-											"source": {
-												"type": "AzureSqlSource",
-												"sqlReaderQuery": {
-													"value": "SELECT MAX(@{item().timestampColumn}) AS MaxTimestamp\n\nFROM\n\n@{item().schema}.@{item().table}",
-													"type": "Expression"
-												},
-												"queryTimeout": "02:00:00",
-												"partitionOption": "None"
-											},
-											"dataset": {
-												"referenceName": "AzureSqlTableDataset",
-												"type": "DatasetReference",
-												"parameters": {
-													"tableName": {
-														"value": "@item().table",
-														"type": "Expression"
-													},
-													"schemaName": {
-														"value": "@item().schema",
-														"type": "Expression"
-													}
-												}
-											}
-										}
-									},
-									{
-										"name": "Fill Watermark",
-										"type": "Copy",
-										"dependsOn": [
-											{
-												"activity": "Get Max Timestamp from Source DB",
-												"dependencyConditions": [
-													"Succeeded"
-												]
-											}
-										],
-										"policy": {
-											"timeout": "0.12:00:00",
-											"retry": 0,
-											"retryIntervalInSeconds": 30,
-											"secureOutput": false,
-											"secureInput": false
-										},
-										"userProperties": [],
-										"typeProperties": {
-											"source": {
-												"type": "JsonSource",
-												"additionalColumns": [
-													{
-														"name": "watermarkTimestamp",
-														"value": {
-															"value": "@activity('Get Max Timestamp from Source DB').output.firstRow.MaxTimestamp",
-															"type": "Expression"
-														}
-													}
-												],
-												"storeSettings": {
-													"type": "AzureBlobFSReadSettings",
-													"recursive": true,
-													"enablePartitionDiscovery": false
-												},
-												"formatSettings": {
-													"type": "JsonReadSettings"
-												}
-											},
-											"sink": {
-												"type": "JsonSink",
-												"storeSettings": {
-													"type": "AzureBlobFSWriteSettings"
-												},
-												"formatSettings": {
-													"type": "JsonWriteSettings"
-												}
-											},
-											"enableStaging": false
-										},
-										"inputs": [
-											{
-												"referenceName": "AzureDataLakeDataset",
-												"type": "DatasetReference",
-												"parameters": {
-													"container": "adf-pipeline-metadata",
-													"fileName": "empty.json"
-												}
-											}
-										],
-										"outputs": [
-											{
-												"referenceName": "AzureDataLakeDataset",
-												"type": "DatasetReference",
-												"parameters": {
-													"container": "adf-pipeline-metadata",
-													"fileName": {
-														"value": "@concat('watermarks/', item().schema, '.', item().table, '.json')",
-														"type": "Expression"
-													}
-												}
-											}
-										]
 									}
 								],
 								"ifTrueActivities": [
