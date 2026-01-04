@@ -2,15 +2,27 @@
 	"name": "Tumbling Window Trigger - Backfilling",
 	"properties": {
 		"annotations": [],
-		"runtimeState": "Stopped",
+		"runtimeState": "Started",
+		"pipeline": {
+			"pipelineReference": {
+				"referenceName": "Backfilling Pipeline",
+				"type": "PipelineReference"
+			},
+			"parameters": {
+				"start_date": "@trigger().windowStartTime",
+				"end_date": "@trigger().windowEndTime"
+			}
+		},
 		"type": "TumblingWindowTrigger",
 		"typeProperties": {
-			"frequency": "Minute",
-			"interval": 15,
-			"startTime": "2026-01-04T07:43:00Z",
+			"frequency": "Month",
+			"interval": 3,
+			"startTime": "2025-01-01T07:05:00Z",
+			"endTime": "2025-06-30T07:05:00Z",
 			"delay": "00:00:00",
 			"maxConcurrency": 50,
 			"retryPolicy": {
+				"count": 3,
 				"intervalInSeconds": 30
 			},
 			"dependsOn": []
