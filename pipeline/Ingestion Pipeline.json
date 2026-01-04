@@ -154,7 +154,7 @@
 												"parameters": {
 													"container": "bronze",
 													"fileName": {
-														"value": "@concat(item().table, '/',item().fileName,'_',variables('current_timestamp'))",
+														"value": "@concat(item().table, '/',item().table,'_',variables('current_timestamp'))",
 														"type": "Expression"
 													}
 												}
@@ -252,7 +252,7 @@
 												"parameters": {
 													"container": "bronze",
 													"fileName": {
-														"value": "@concat(item().table, '/',item().fileName)",
+														"value": "@concat(item().table, '/',item().table)",
 														"type": "Expression"
 													}
 												}
