@@ -10,7 +10,8 @@
 				"type": "string"
 			},
 			"folder": {
-				"type": "string"
+				"type": "string",
+				"defaultValue": "''"
 			},
 			"fileName": {
 				"type": "string"
