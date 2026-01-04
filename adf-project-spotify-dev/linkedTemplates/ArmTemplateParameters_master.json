@@ -15,10 +15,10 @@
 			"value": "sqldb-project-spotify-dev"
 		},
 		"Tumbling Window Trigger for Backfilling_properties_pipeline_parameters_start_date": {
-			"value": "@trigger().startTime"
+			"value": "@trigger().windowStartTime"
 		},
 		"Tumbling Window Trigger for Backfilling_properties_pipeline_parameters_end_date": {
-			"value": "@trigger().endTime"
+			"value": "@trigger().windowEndTime"
 		},
 		"containerUri": {
 			"value": ""
