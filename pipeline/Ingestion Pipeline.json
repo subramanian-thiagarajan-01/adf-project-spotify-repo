@@ -118,7 +118,7 @@
 													"type": "Expression"
 												},
 												"incrementalCountValue": {
-													"value": "@activity('Get Count of Incremental Records').output.countValue",
+													"value": "@activity('Get Count of Incremental Records').output.resultSets[0].rows[0].countValue",
 													"type": "Expression"
 												},
 												"watermarkTimestamp": {
