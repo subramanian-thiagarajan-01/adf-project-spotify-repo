@@ -124,7 +124,7 @@
 												"parameters": {
 													"container": "bronze",
 													"fileName": {
-														"value": "@concat(\n    item().table, \n    '/',\n    item().table,\n    '_',\n    'backfilled',\n    utcNow())\n\n",
+														"value": "@concat(\n    item().table, \n    '/',\n    item().table,\n    '_',\n    'backfilled',\n    utcNow(),\n    '.json')\n\n",
 														"type": "Expression"
 													}
 												}
@@ -185,7 +185,7 @@
 												"parameters": {
 													"container": "bronze",
 													"fileName": {
-														"value": "@concat(item().table, '/',item().table)",
+														"value": "@concat(item().table, '/',item().table,'.json')",
 														"type": "Expression"
 													}
 												}

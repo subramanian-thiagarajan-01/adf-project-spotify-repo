@@ -232,7 +232,7 @@
 												"parameters": {
 													"container": "bronze",
 													"fileName": {
-														"value": "@concat(item().table, '/',item().table)",
+														"value": "@concat(item().table, '/',item().table,'.json')",
 														"type": "Expression"
 													}
 												}
