@@ -274,7 +274,7 @@
 														"parameters": {
 															"container": "bronze",
 															"fileName": {
-																"value": "@concat(\n    item().table, \n    '/',\n    item().table,\n    '_',\n    'backfilled',\n    utcNow(),\n    '.json')\n\n",
+																"value": "@concat(\n    item().table, \n    '/',\n    string(formatDateTime(utcNow(),'yyyy-MM-dd')),\n    '/',\n    utcNow(),\n    '.json')\n\n",
 																"type": "Expression"
 															}
 														}
@@ -470,7 +470,7 @@
 											"parameters": {
 												"container": "bronze",
 												"fileName": {
-													"value": "@concat(\n    pipeline().parameters.inputItem.table, \n    '/',\n    pipeline().parameters.inputItem.table,\n    '_',\n    variables('current_timestamp'),\n    '.json')\n\n",
+													"value": "@concat(\n    pipeline().parameters.inputItem.table, \n    '/',\n    string(formatDateTime(variables('current_timestamp'),'yyyy-MM-dd')),\n    '/',\n    variables('current_timestamp'),\n    '.json')",
 													"type": "Expression"
 												}
 											}
