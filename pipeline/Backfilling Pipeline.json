@@ -124,7 +124,7 @@
 												"parameters": {
 													"container": "bronze",
 													"fileName": {
-														"value": "@concat(\n    item().table, \n    '/',\n    item().table,\n    '_',\n    'backfilled',\n    utcNow(),\n    '.json')\n\n",
+														"value": "@concat(\n    item().table, \n    '/',\n    string(formatDateTime(utcNow(),'yyyy-MM-dd')),\n    '/',\n    utcNow(),\n    '.json')\n\n",
 														"type": "Expression"
 													}
 												}
