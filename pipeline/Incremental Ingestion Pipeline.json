@@ -76,7 +76,7 @@
 									"parameters": {
 										"container": "bronze",
 										"fileName": {
-											"value": "@concat(\n    pipeline().parameters.inputItem.table, \n    '/',\n    string(formatDateTime(variables('current_timestamp'),'yyyy-MM-dd')),\n    '/',\n    variables('current_timestamp'),\n    '.json')",
+											"value": "@concat(\n    pipeline().parameters.inputItem.table, \n    '/date=',\n    string(formatDateTime(variables('current_timestamp'),'yyyy-MM-dd')),\n    '/',\n    variables('current_timestamp'),\n    '.json')",
 											"type": "Expression"
 										}
 									}
